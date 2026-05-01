@@ -1,0 +1,17 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+.env
+.env.*
+!.env.example
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+.coverage
+htmlcov
+.pytest_cache
+tests/
+*.md
