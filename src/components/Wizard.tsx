@@ -89,3 +89,4 @@ export function Wizard({ steps, lang }: WizardProps) {
     </div>
   );
 }
+
