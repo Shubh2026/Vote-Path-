@@ -7,6 +7,7 @@ const Timeline = lazy(() => import("./components").then(module => ({ default: mo
 const Wizard = lazy(() => import("./components").then(module => ({ default: module.Wizard })));
 const Quiz = lazy(() => import("./components").then(module => ({ default: module.Quiz })));
 const AIChat = lazy(() => import("./components").then(module => ({ default: module.AIChat })));
+const StateMap = lazy(() => import("./components").then(module => ({ default: module.StateMap })));
 
 import { 
   getTimelineData, 
@@ -343,6 +344,18 @@ function App() {
                   <Info size={16} className="text-primary shrink-0" /> {stateInfo.note}
                 </p>
               </div>
+
+              {/* State Map Integration */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8"
+              >
+                <Suspense fallback={<LoadingSkeleton />}>
+                  <StateMap stateName={selectedState} />
+                </Suspense>
+              </motion.div>
             </motion.div>
           )}
         </motion.section>

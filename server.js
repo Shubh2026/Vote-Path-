@@ -39,29 +39,45 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash-latest",
-      tools: [
-        {
-          googleSearchRetrieval: {},
-        },
-      ],
-      systemInstruction: {
-        role: "system",
-        parts: [{ text: `You are an expert AI assistant for "BharatVote Guide", an interactive platform to educate Indian citizens about the election process. 
-          Provide accurate, unbiased, and helpful information about:
-          - Voter registration and eligibility
-          - Polling process (EVM, VVPAT, NOTA)
-          - Election timeline and phases
-          - Candidate requirements
-          - Election Commission of India (ECI) rules
-          - Indian democracy and Constitution
-          
-          Respond in the language the user speaks (${lang === 'en' ? 'English' : 'Hindi'}). 
-          Keep responses concise, professional, and use markdown for formatting. 
-          If you don't know something, suggest checking the official ECI website (eci.gov.in).` }]
-      }
-    });
+    let model;
+    try {
+      // Try with Google Search Grounding first
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash-latest",
+        tools: [
+          {
+            googleSearchRetrieval: {},
+          },
+        ],
+        systemInstruction: {
+          role: "system",
+          parts: [{ text: `You are an expert AI assistant for "BharatVote Guide", an interactive platform to educate Indian citizens about the election process. 
+            Provide accurate, unbiased, and helpful information about:
+            - Voter registration and eligibility
+            - Polling process (EVM, VVPAT, NOTA)
+            - Election timeline and phases
+            - Candidate requirements
+            - Election Commission of India (ECI) rules
+            - Indian democracy and Constitution
+            
+            Respond in the language the user speaks (${lang === 'en' ? 'English' : 'Hindi'}). 
+            Keep responses concise, professional, and use markdown for formatting. 
+            If you don't know something, suggest checking the official ECI website (eci.gov.in).` }]
+        }
+      });
+    } catch (toolError) {
+      console.warn('Failed to initialize model with tools, falling back to basic model:', toolError);
+      // Fallback to model without tools
+      model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash-latest",
+        systemInstruction: {
+          role: "system",
+          parts: [{ text: `You are an expert AI assistant for "BharatVote Guide", an interactive platform to educate Indian citizens about the election process. 
+            Respond in the language the user speaks (${lang === 'en' ? 'English' : 'Hindi'}). 
+            Keep responses concise, professional, and use markdown for formatting.` }]
+        }
+      });
+    }
 
     const lastMessage = messages[messages.length - 1].content;
     const history = messages.slice(0, -1).map((m) => ({
@@ -87,6 +103,18 @@ app.post('/api/chat', async (req, res) => {
     res.json({ text, groundingMetadata });
   } catch (error) {
     console.error('Gemini API Error:', error);
+    // If the error was likely tool-related and the first try-catch didn't catch it (e.g. during sendMessage)
+    if (error.message?.includes('tools') || error.message?.includes('grounding')) {
+       // One final attempt without tools if we haven't already
+       try {
+          const basicModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+          const basicResult = await basicModel.generateContent(messages[messages.length - 1].content);
+          const basicResponse = await basicResult.response;
+          return res.json({ text: basicResponse.text() });
+       } catch (innerError) {
+          return res.status(500).json({ error: 'Failed to communicate with Gemini AI' });
+       }
+    }
     res.status(500).json({ error: 'Failed to communicate with Gemini AI' });
   }
 });
