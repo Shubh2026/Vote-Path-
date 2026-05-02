@@ -81,7 +81,7 @@ export function AIChat({ lang }: AIChatProps) {
 
       const data = await response.json();
       setMessages(prev => [...prev, { role: "bot", content: data.text }]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Chat Error:", err);
       setError(err.message);
       
@@ -211,3 +211,4 @@ export function AIChat({ lang }: AIChatProps) {
     </Card>
   );
 }
+

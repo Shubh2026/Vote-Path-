@@ -5,7 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { HelpCircle, BookOpen, AlertCircle } from "lucide-react";
+import { HelpCircle, AlertCircle } from "lucide-react";
 import { faqData } from '@/data/faq-data';
 
 interface FAQProps {

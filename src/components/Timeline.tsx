@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { getTimelineData, type TimelineItem } from "@/data/election-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Zap } from "lucide-react";
+import { Calendar } from "lucide-react";
 
 interface TimelineProps {
   data?: TimelineItem[];
